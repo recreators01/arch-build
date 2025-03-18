@@ -1,4 +1,4 @@
-name: BUILD
+name: BUILD PKG
 
 on:
   push:
@@ -9,12 +9,7 @@ jobs:
   buildAUR:
     strategy:
       matrix:
-        repos: [osu-lazer, weechat-notify-send, fpp, redsocks, git-cola, realesrgan-ncnn-vulkan, python-torchaudio, python-torchinfo, python-rapidocr-onnxruntime, darkly]
-        include:
-          - repos: git-cola
-            preinstall-pkgs: "at-spi2-core"
-          - repos: realesrgan-ncnn-vulkan
-            preinstall-pkgs: "vulkan-intel"
+        repos: [osu-lazer, go-musicfox]
 
       fail-fast: false
       
@@ -41,7 +36,7 @@ jobs:
         artifacts: "./*/*.zst"
         token: ${{ secrets.GITHUB_TOKEN }}
           
-  uploadToOneDrive:      
+  uploadToReleases:      
     runs-on: ubuntu-latest
     if: always()
     needs: [buildAUR]
@@ -57,16 +52,12 @@ jobs:
       
       - uses: ./create-db-and-upload-action
         with:
-          RCLONE_CONFIG_CONTENT: ${{ secrets.RCLONE_CONFIG }}
-          RCLONE_CONFIG_NAME: onedrive
-          dest_path: /archrepo
           repo_name: vifly
-          gpg-privatekey: ${{ secrets.gpg_private_key }}
           local_path: ${{ steps.download.outputs.download-path }}
 
       - uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
           tag: "packages"
-          artifacts: "./upload_packages/*.sig,./upload_packages/*.files,./upload_packages/*.db,./upload_packages/*.tar.gz"
+          artifacts: "./upload_packages/*.files,./upload_packages/*.db,./upload_packages/*.tar.gz"
           token: ${{ secrets.GITHUB_TOKEN }}
