@@ -1,0 +1,92 @@
+name: BUILD PKG
+
+on:
+  push:
+  schedule:
+    - cron:  '1 */8 * * *'
+
+jobs:
+  buildAUR:
+    strategy:
+      matrix:
+        repos: [pwvucontrol]
+
+      fail-fast: false
+      
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: ./build-aur-action
+      with:
+        repo-name: ${{ matrix.repos }}
+        preinstallPkgs: ${{ matrix.preinstall-pkgs }}
+    
+    - uses: actions/upload-artifact@v4
+      with:
+        path: ./*/*.pkg.tar.zst
+        name: ${{ matrix.repos }}
+        if-no-files-found: error
+        
+    - uses: ncipollo/release-action@v1
+      with:
+        allowUpdates: true
+        tag: "packages"
+        artifacts: "./*/*.zst"
+        token: ${{ secrets.GITHUB_TOKEN }}
+  
+  buildNonAUR:
+    strategy:
+      matrix:
+        pkgdir: [sing-box]
+
+      fail-fast: false
+      
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: ./build-nonaur-action
+      with:
+        pkgdir: ${{ matrix.pkgdir }}
+    
+    - uses: actions/upload-artifact@v4
+      with:
+        path: ./build-nonaur-action/*/*.pkg.tar.zst
+        name: ${{ matrix.pkgdir }}
+        if-no-files-found: error
+        
+    - uses: ncipollo/release-action@v1
+      with:
+        allowUpdates: true
+        tag: "packages"
+        artifacts: "./build-nonaur-action/*/*.zst"
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+  uploadToReleases:      
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [buildAUR, buildNonAUR]
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/download-artifact@v4
+        id: download
+
+      - name: Display structure of downloaded files
+        run: ls -R ${{ steps.download.outputs.download-path }}
+      
+      - uses: ./create-db-and-upload-action
+        with:
+          repo_name: vifly
+          local_path: ${{ steps.download.outputs.download-path }}
+
+      - uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          tag: "packages"
+          artifacts: "./upload_packages/*.files,./upload_packages/*.db,./upload_packages/*.tar.gz"
+          token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,60 @@
+pkgname=sing-box-CHIZI-git
+_pkgname=sing-box
+pkgver=1.12.0beta.14.r6.ge50b9914
+pkgrel=1
+
+pkgdesc='The universal proxy platform (git version).'
+arch=('x86_64')
+url='https://github.com/CHIZI-0618/sing-box'
+license=('GPL3 with name use or association addition')
+
+provides=("$_pkgname")
+conflicts=("sing-box" "sing-box-beta")
+
+makedepends=('go')
+
+source=("$_pkgname::git+https://github.com/CHIZI-0618/sing-box.git#branch=dev-next")
+sha256sums=(SKIP)
+
+pkgver() {
+    cd "$_pkgname"
+    git describe --tags --long | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-\([^-]*\)-\([^-]*\)$/.\1.\2/;s/-//'
+}
+
+_tags=with_gvisor,with_quic,with_dhcp,with_wireguard,with_utls,with_acme,with_clash_api
+build() {
+    cd "$_pkgname"
+
+    export CGO_CPPFLAGS="$CPPFLAGS"
+    export CGO_CFLAGS="$CFLAGS"
+    export CGO_CXXFLAGS="$CXXFLAGS"
+    export CGO_LDFLAGS="$LDFLAGS"
+    export VERSION=$(go run ./cmd/internal/read_tag)
+
+    go build \
+        -v \
+        -trimpath \
+        -buildmode=pie \
+        -mod=readonly \
+        -modcacherw \
+        -tags "$_tags" \
+        -ldflags "
+            -X \"github.com/sagernet/sing-box/constant.Version=$VERSION\"
+            -s -w -buildid= 
+            -linkmode=external" \
+        ./cmd/sing-box
+
+    install -d completions
+    go run ./cmd/sing-box completion bash >completions/bash
+    go run ./cmd/sing-box completion zsh >completions/zsh
+}
+
+package() {
+    cd "$_pkgname"
+
+    install -Dm644 LICENSE -t "$pkgdir/usr/share/licenses/$_pkgname"
+    install -Dm755 "$_pkgname" -t "$pkgdir/usr/bin"
+
+    install -Dm644 completions/bash "${pkgdir}/usr/share/bash-completion/completions/${_pkgname}.bash"
+    install -Dm644 completions/zsh "${pkgdir}/usr/share/zsh/site-functions/_${_pkgname}"
+}

@@ -1,0 +1,13 @@
+name: 'Generate Arch Repo database and upload'
+inputs:
+  repo_name:
+    required: true
+  local_path:
+    default: './'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  
+  env:
+    repo_name: ${{ inputs.repo_name }}
+    local_path: ${{ inputs.local_path }}
