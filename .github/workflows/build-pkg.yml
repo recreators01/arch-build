@@ -62,7 +62,7 @@ jobs:
       with:
         allowUpdates: true
         tag: "packages"
-        artifacts: "./build-nonaur-action/*/*.zst"
+        artifacts: "./*/*.zst"
         token: ${{ secrets.GITHUB_TOKEN }}
 
   uploadToReleases:      
