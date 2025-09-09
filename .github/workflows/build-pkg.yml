@@ -19,20 +19,13 @@ jobs:
     - uses: ./build-aur-action
       with:
         repo-name: ${{ matrix.repos }}
-        preinstallPkgs: ${{ matrix.preinstall-pkgs }}
+        preinstallPkgs: ${{ matrix.preinstall_pkgs }}
     
     - uses: actions/upload-artifact@v4
       with:
-        path: ./*/*.pkg.tar.zst
+        path: artifacts/${{ matrix.repo }}/*.pkg.tar.zst
         name: ${{ matrix.repos }}
         if-no-files-found: error
-        
-    - uses: ncipollo/release-action@v1
-      with:
-        allowUpdates: true
-        tag: "packages"
-        artifacts: "./*/*.zst"
-        token: ${{ secrets.GITHUB_TOKEN }}
   
   buildNonAUR:
     strategy:
@@ -52,16 +45,9 @@ jobs:
     
     - uses: actions/upload-artifact@v4
       with:
-        path: ./build-nonaur-action/*/*.pkg.tar.zst
+        path: artifacts/${{ matrix.pkgdir }}/*.pkg.tar.zst
         name: ${{ matrix.pkgdir }}
         if-no-files-found: error
-        
-    - uses: ncipollo/release-action@v1
-      with:
-        allowUpdates: true
-        tag: "packages"
-        artifacts: "./build-nonaur-action/*/*.zst"
-        token: ${{ secrets.GITHUB_TOKEN }}
 
   uploadToReleases:      
     runs-on: ubuntu-latest
@@ -71,18 +57,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - uses: actions/download-artifact@v4
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./downloaded_artifacts
         id: download
 
-      - name: Display structure of downloaded files
-        run: ls -R ${{ steps.download.outputs.download-path }}
+      - name: Show files
+        run: ls -R ./downloaded_artifacts
       
-      - uses: ./create-db-and-upload-action
+      - name: Create DB and prepare upload packages
+        uses: ./create-db-and-upload-action
         with:
           repo_name: vifly
-          local_path: ${{ steps.download.outputs.download-path }}
+          local_path: ./downloaded_artifacts
 
-      - uses: ncipollo/release-action@v1
+      - name: Delete existing release
+        run: gh release delete packages -y || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create/Update GitHub Release and upload assets
+        uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
           tag: "packages"
