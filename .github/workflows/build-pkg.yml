@@ -23,7 +23,7 @@ jobs:
     
     - uses: actions/upload-artifact@v4
       with:
-        path: artifacts/${{ matrix.repo }}/*.pkg.tar.zst
+        path: artifacts/${{ matrix.repos }}/*.pkg.tar.zst
         name: ${{ matrix.repos }}
         if-no-files-found: error
   
