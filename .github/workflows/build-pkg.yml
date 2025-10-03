@@ -7,7 +7,7 @@ jobs:
   buildAUR:
     strategy:
       matrix:
-        repos: [sonusmix, matugen-bin, chromium-widevine]
+        repos: [matugen-bin, chromium-widevine]
 
       fail-fast: false
       
@@ -30,7 +30,7 @@ jobs:
   buildNonAUR:
     strategy:
       matrix:
-        pkgdir: [sing-box]
+        pkgdir: [sing-box, wiliwili]
 
       fail-fast: false
       
