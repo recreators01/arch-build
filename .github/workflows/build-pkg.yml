@@ -7,7 +7,7 @@ jobs:
   buildAUR:
     strategy:
       matrix:
-        repos: [matugen-bin, chromium-widevine, wechat-universal-bwrap]
+        repos: [matugen-bin, chromium-widevine]
 
       fail-fast: false
       
