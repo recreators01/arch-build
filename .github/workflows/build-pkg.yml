@@ -7,7 +7,7 @@ jobs:
   buildAUR:
     strategy:
       matrix:
-        repos: [matugen-bin, chromium-widevine, xdg-desktop-portal-termfilechooser-hunkyburrito-git]
+        repos: [matugen-bin, chromium-widevine, wechat-universal-bwrap]
 
       fail-fast: false
       
