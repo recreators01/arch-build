@@ -7,7 +7,7 @@ jobs:
   buildAUR:
     strategy:
       matrix:
-        repos: [matugen-bin, chromium-widevine]
+        repos: [chromium-widevine]
 
       fail-fast: false
       
