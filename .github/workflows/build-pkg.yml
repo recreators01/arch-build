@@ -52,7 +52,8 @@ jobs:
   uploadToReleases:      
     runs-on: ubuntu-latest
     if: always()
-    needs: [buildAUR, buildNonAUR]
+    # needs: [buildAUR, buildNonAUR]
+    needs: [buildAUR]
 
     steps:
       - uses: actions/checkout@v4
