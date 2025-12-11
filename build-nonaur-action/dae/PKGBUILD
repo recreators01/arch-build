@@ -12,7 +12,6 @@ conflicts=("$_name")
 depends=('glibc')
 makedepends=('clang' 'go' 'git')
 backup=("etc/dae/config.dae")
-install="${_name}.install"
 source=(
 	"git+https://github.com/daeuniverse/dae.git"
 	"geoip.dat::https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.dat"
