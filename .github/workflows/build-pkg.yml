@@ -7,7 +7,7 @@ jobs:
   buildAUR:
     strategy:
       matrix:
-        repos: [chromium-widevine]
+        repos: [chromium-widevine, wps-office-365]
 
       fail-fast: false
       
